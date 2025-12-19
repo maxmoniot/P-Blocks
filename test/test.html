@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Installation - Programmation Motifs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .test-box h2 {
+            color: #4C97FF;
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #4CAF50;
+        }
+        .error {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #f44336;
+        }
+        .info {
+            background: #E3F2FD;
+            color: #1565C0;
+            border: 1px solid #2196F3;
+        }
+        button {
+            background: #4C97FF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3373CC;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🧪 Test d'Installation</h1>
+        <p>Cette page permet de vérifier que tous les fichiers sont correctement installés.</p>
+        
+        <div class="info">
+            <strong>ℹ️ Information</strong><br>
+            Cliquez sur les boutons ci-dessous pour tester chaque composant.
+        </div>
+    </div>
+
+    <div class="test-box">
+        <h2>1. Test des fichiers</h2>
+        <button onclick="testFiles()">🔍 Vérifier les fichiers</button>
+        <div id="file-results"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>2. Test du backend PHP</h2>
+        <button onclick="testAPI()">⚙️ Tester l'API</button>
+        <div id="api-results"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>3. Test de sauvegarde</h2>
+        <button onclick="testSave()">💾 Tester la sauvegarde</button>
+        <div id="save-results"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>4. Résumé</h2>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        let testResults = {
+            files: false,
+            api: false,
+            save: false
+        };
+
+        async function testFiles() {
+            const resultsDiv = document.getElementById('file-results');
+            resultsDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
+            
+            const files = [
+                { name: 'index.html', url: 'index.html' },
+                { name: 'php/api.php', url: 'php/api.php' },
+                { name: 'template-eleve.html', url: 'template-eleve.html' }
+            ];
+            
+            let html = '<div style="margin-top: 15px;">';
+            let allOk = true;
+            
+            for (const file of files) {
+                try {
+                    const response = await fetch(file.url, { method: 'HEAD' });
+                    if (response.ok) {
+                        html += `<div class="success">✅ ${file.name} : OK</div>`;
+                    } else {
+                        html += `<div class="error">❌ ${file.name} : Non trouvé (${response.status})</div>`;
+                        allOk = false;
+                    }
+                } catch (error) {
+                    html += `<div class="error">❌ ${file.name} : Erreur de chargement</div>`;
+                    allOk = false;
+                }
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+            testResults.files = allOk;
+            updateSummary();
+        }
+
+        async function testAPI() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
+            
+            try {
+                // Test si l'API répond
+                const response = await fetch('api.php?action=cleanup');
+                const data = await response.json();
+                
+                if (data.success !== undefined) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">✅ API PHP fonctionne correctement</div>
+                        <div class="info">Fichiers nettoyés : ${data.cleaned || 0}</div>
+                    `;
+                    testResults.api = true;
+                } else {
+                    resultsDiv.innerHTML = '<div class="error">❌ L\'API ne répond pas correctement</div>';
+                    testResults.api = false;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">❌ Impossible de contacter l'API</div>
+                    <div class="info">Erreur: ${error.message}</div>
+                `;
+                testResults.api = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testSave() {
+            const resultsDiv = document.getElementById('save-results');
+            resultsDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
+            
+            // Créer des données de test
+            const testData = {
+                '5eme': {
+                    worlds: 1,
+                    levelsPerWorld: 1,
+                    pointsPerWorld: [0],
+                    levels: {
+                        '1': {
+                            consigne: 'Test',
+                            grid: [],
+                            paintedCells: {}
+                        }
+                    }
+                }
+            };
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', 'save');
+                formData.append('profName', 'test_' + Date.now());
+                formData.append('password', 'test1234');
+                formData.append('captchaAnswer', '5');
+                formData.append('captchaExpected', '5');
+                formData.append('cursusData', JSON.stringify(testData));
+                
+                const response = await fetch('php/api.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">✅ Sauvegarde fonctionne correctement</div>
+                        <div class="info">URL générée : <a href="https://${result.url}" target="_blank">${result.url}</a></div>
+                        <div class="info">⚠️ Ceci est un test, vous pouvez ignorer cette page.</div>
+                    `;
+                    testResults.save = true;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">❌ Erreur de sauvegarde</div>
+                        <div class="info">${result.message}</div>
+                    `;
+                    testResults.save = false;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">❌ Erreur lors du test de sauvegarde</div>
+                    <div class="info">${error.message}</div>
+                `;
+                testResults.save = false;
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary');
+            const total = Object.values(testResults).filter(v => v === true).length;
+            const totalTests = Object.keys(testResults).length;
+            
+            if (total === totalTests && total > 0) {
+                summaryDiv.innerHTML = `
+                    <div class="success">
+                        <strong>🎉 Tout fonctionne parfaitement !</strong><br>
+                        ${total}/${totalTests} tests réussis<br><br>
+                        Vous pouvez maintenant utiliser l'application :<br>
+                        <a href="index.html" style="color: #1976D2;">→ Ouvrir Programmation Motifs</a>
+                    </div>
+                `;
+            } else if (total > 0) {
+                summaryDiv.innerHTML = `
+                    <div class="info">
+                        <strong>⚠️ Installation partielle</strong><br>
+                        ${total}/${totalTests} tests réussis<br>
+                        Certains composants ne fonctionnent pas correctement.
+                    </div>
+                `;
+            } else {
+                summaryDiv.innerHTML = `
+                    <div class="info">
+                        Lancez les tests ci-dessus pour vérifier l'installation.
+                    </div>
+                `;
+            }
+        }
+
+        // Initialisation
+        updateSummary();
+    </script>
+</body>
+</html>

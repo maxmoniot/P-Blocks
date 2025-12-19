@@ -1,0 +1,2548 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            /* overflow retiré pour permettre le scroll */
+        }
+
+        .app-container {
+            min-height: 100vh; /* min-height au lieu de height pour permettre le débordement */
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4C97FF 0%, #3373CC 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header.teacher-mode {
+            background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+        }
+        
+        .header-subtitle {
+            font-size: 13px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border: 2px solid white;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #4C97FF;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 60px);
+            /* overflow retiré pour permettre le scroll */
+        }
+
+        /* Colonne de gauche - Grille et contrôles */
+        .left-panel {
+            width: 350px;
+            background: #FFFFFF;
+            border-right: 1px solid #E0E0E0;
+            padding: 10px 20px 20px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Colonne du milieu - Palette de blocs */
+        .middle-panel {
+            width: 280px;
+            background: #F9F9F9;
+            border-right: 1px solid #E0E0E0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        /* Ajustement des colonnes pour écrans moyens (769px - 1150px) */
+        @media (min-width: 769px) and (max-width: 1150px) {
+            .left-panel {
+                width: 280px !important; /* Réduit de 350px à 280px */
+                padding: 10px 10px 20px 10px !important; /* Réduit padding gauche/droite : 20px -> 10px */
+            }
+            
+            .middle-panel {
+                width: 220px !important; /* Réduit de 280px à 220px */
+            }
+            
+            /* Réduire les cellules de la grille pour qu'elle rentre dans 280px - 20px padding = 260px */
+            .grid-cell {
+                width: 24px !important;  /* 22px -> 24px pour meilleur ratio */
+                height: 24px !important;
+                border: 1px solid #E0E0E0 !important; /* Bordure fine uniforme */
+            }
+            
+            /* S'assurer que la bordure de la grille reste visible */
+            .grid {
+                border: 2px solid #999 !important; /* Forcer bordure complète */
+                box-sizing: content-box !important; /* Ne pas inclure bordure dans width */
+                gap: 0 !important; /* Pas de gap entre cellules */
+                background: #D0D0D0 !important; /* Fond gris visible */
+            }
+            
+            /* CRITIQUE : Forcer TOUTES les grilles à rester CARRÉES */
+            #teacher-grid,
+            #student-grid,
+            #target-grid {
+                aspect-ratio: 1 / 1 !important;
+                width: fit-content !important;
+                max-width: 100% !important;
+            }
+            
+            /* Mon programme aura plus d'espace : 769px - 280px - 220px = 269px minimum */
+        }
+
+        .middle-panel.delete-zone {
+            background: rgba(255, 85, 85, 0.4);
+        }
+        
+        /* Animation super visible pour le bouton d'aide */
+        @keyframes attention-grab {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            10% {
+                transform: scale(1.3);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.5);
+            }
+            20% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
+            }
+            30% {
+                transform: scale(1.3);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.5);
+            }
+            40% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
+            }
+            50% {
+                transform: scale(1.3);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.5);
+            }
+            60%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        .middle-panel.delete-zone::before {
+            content: '🗑️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            opacity: 1;
+            pointer-events: none;
+            z-index: 1000;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+        }
+
+        /* Colonne de droite - Zone de programmation */
+        .right-panel {
+            flex: 1;
+            background: #FFFFFF;
+            padding: 20px 20px 0 20px;
+            overflow-y: auto;
+        }
+
+        .score-display {
+            background: #FFD700;
+            color: #333;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .level-info {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .level-info h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .consigne-box {
+            background: #FFF9C4;
+            border-left: 4px solid #FBC02D;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .consigne-box h3 {
+            color: #F57F17;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .cursus-selector, .level-selector {
+            margin-bottom: 15px;
+        }
+
+        .cursus-selector label, .level-selector label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .cursus-selector select, .level-selector select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #E0E0E0;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+
+        /* Grille de dessin */
+        .grid-container {
+            margin: 2px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid {
+            display: grid;
+            gap: 0;
+            background: #D0D0D0;
+            border: 2px solid #999;
+            width: fit-content;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .grid-cell {
+            width: 25px;
+            height: 25px;
+            background: white;
+            border: 1px solid #E0E0E0;
+        }
+
+        /* Palette de blocs style Scratch */
+        .blocks-palette {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .blocks-category {
+            margin-bottom: 3px;
+        }
+
+        .category-header {
+            background: #E8E8E8;
+            padding: 6px 10px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            font-size: 12px;
+            color: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+
+        .category-header:hover {
+            background: #D8D8D8;
+        }
+
+        .category-header.collapsed::before {
+            content: '▶';
+            font-size: 9px;
+        }
+
+        .category-header.expanded::before {
+            content: '▼';
+            font-size: 9px;
+        }
+
+        .category-blocks {
+            padding: 3px 5px;
+            display: block;
+        }
+
+        .category-blocks.hidden {
+            display: none;
+        }
+
+        /* Blocs style Scratch */
+        .block {
+            padding: 4px 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            cursor: grab;
+            color: white;
+            font-weight: 500;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+            user-select: none;
+            min-height: 28px;
+        }
+
+        /* Forme de puzzle Scratch */
+        .block::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 20px;
+            width: 12px;
+            height: 3px;
+            background: inherit;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .block::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 20px;
+            width: 12px;
+            height: 4px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 0 0 2px 2px;
+        }
+
+        .block:active {
+            cursor: grabbing;
+        }
+        
+        /* Bloc en cours d'exécution */
+        .block.executing {
+            outline: 4px solid #28a745;
+            outline-offset: 2px;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.6), 0 2px 3px rgba(0,0,0,0.2);
+            animation: pulse 0.5s ease-in-out infinite;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                outline-color: #28a745;
+                box-shadow: 0 0 15px rgba(40, 167, 69, 0.6), 0 2px 3px rgba(0,0,0,0.2);
+            }
+            50% {
+                outline-color: #20c997;
+                box-shadow: 0 0 25px rgba(32, 201, 151, 0.8), 0 2px 3px rgba(0,0,0,0.2);
+            }
+        }
+
+        /* Blocs capsule pour boucles et conditions */
+        .block-capsule {
+            position: relative;
+            margin: 8px 0;
+        }
+
+        .block-capsule .block {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .block-capsule .block::after {
+            display: none;
+        }
+
+        .block-capsule-bottom {
+            background: inherit;
+            height: 8px;
+            border-radius: 0 0 8px 8px;
+            margin-top: -4px;
+            position: relative;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+        }
+
+        .block-capsule-bottom::before {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 20px;
+            width: 12px;
+            height: 4px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 0 0 2px 2px;
+        }
+
+        /* Couleurs des blocs */
+        .block.motion { background: #4C97FF; }
+        .block.looks { background: #9966FF; }
+        .block.sound { background: #CF63CF; }
+        .block.events { background: #FFD500; color: #333; }
+        .block.control { background: #FFAB19; }
+        .block.sensing { background: #5CB1D6; }
+        .block.operators { background: #59C059; }
+        .block.variables { background: #FF8C1A; }
+        .block.custom { background: #FF6680; }
+
+        .block input, .block select {
+            padding: 3px 6px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+            min-width: 40px;
+            font-size: 11px;
+            color: #333;
+            text-align: center;
+        }
+
+        .block input[type="number"] {
+            max-width: 50px;
+        }
+
+        .block input[type="text"] {
+            min-width: 60px;
+        }
+
+        /* Réduire la taille des inputs pour les opérateurs */
+        .block.operators input[type="text"] {
+            min-width: 35px;
+            max-width: 40px;
+        }
+        
+        /* Ajuster la taille pour les blocs de comparaison */
+        .block.sensing input[type="text"] {
+            min-width: 30px;
+            max-width: 35px;
+        }
+        
+        /* Bloc variable simple plus large */
+        .block.variables .var-select {
+            min-width: 70px;
+        }
+
+        .block select {
+            padding: 3px 2px;
+            max-width: 50px;
+        }
+
+        /* Slot pour condition dans le bloc "si" */
+        .condition-slot {
+            display: inline-block;
+            min-width: 80px;
+            padding: 2px 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            border: 1px dashed rgba(255,255,255,0.5);
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .condition-slot.filled {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .condition-slot .block {
+            display: inline-flex;
+            margin: 0;
+            font-size: 11px;
+            padding: 2px 6px;
+        }
+        
+        /* Slot pour variable dans le bloc de comparaison */
+        .var-slot {
+            display: inline-block;
+            min-width: 50px;
+            padding: 2px 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            border: 1px dashed rgba(255,255,255,0.5);
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .var-slot.filled {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .var-slot .block {
+            display: inline-flex;
+            margin: 0;
+            font-size: 11px;
+            padding: 2px 4px;
+        }
+
+        .value-slot {
+            display: inline-block;
+        }
+
+        .value-slot input {
+            width: 60px;
+            padding: 2px 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* Zone de programmation */
+        .program-area {
+            min-height: calc(100vh - 80px);
+            border: 2px dashed #D0D0D0;
+            border-radius: 8px;
+            padding: 20px 20px 20px 20px;
+            background: #F8F8F8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .program-area h3 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .program-area.drag-over {
+            background: #E3F2FD;
+            border-color: #4C97FF;
+        }
+
+        .program-blocks-container {
+            flex: 1;
+            min-height: 350px;
+        }
+
+        .program-block {
+            margin: 8px 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .program-block .block {
+            cursor: move;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+
+        .remove-btn {
+            position: absolute;
+            right: -8px;
+            top: -8px;
+            background: #FF5555;
+            border: 2px solid white;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .remove-btn:hover {
+            background: #FF0000;
+            transform: scale(1.1);
+        }
+
+        /* Blocs imbriqués (pour les boucles et conditions) */
+        .nested-blocks {
+            margin-left: 15px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            padding: 8px;
+            background: rgba(0,0,0,0.08);
+            border-left: 3px solid rgba(0,0,0,0.15);
+            border-radius: 4px;
+            min-height: 40px;
+            transition: background 0.2s;
+        }
+
+        .nested-blocks.empty::after {
+            content: 'Glisse des blocs ici';
+            color: #999;
+            font-size: 11px;
+            font-style: italic;
+        }
+        
+        .nested-blocks.drag-over {
+            background: rgba(76, 151, 255, 0.2);
+            border-left-color: #4C97FF;
+        }
+
+        /* Rendre les blocs dans la zone de programmation déplaçables */
+        .program-blocks-container .program-block {
+            cursor: move;
+        }
+
+        .program-blocks-container .block {
+            cursor: move;
+        }
+
+        .program-block.dragging {
+            opacity: 0.5;
+        }
+
+        .program-block.drag-over-top {
+            border-top: 3px solid #4C97FF;
+            margin-top: 8px;
+        }
+
+        .program-block.drag-over-bottom {
+            border-bottom: 3px solid #4C97FF;
+            margin-bottom: 8px;
+        }
+
+        /* Boutons de contrôle */
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .controls .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .btn-success {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0b7dda;
+        }
+        
+        /* Forcer les boutons de la modal auto-create en pleine largeur */
+        #auto-create-modal .btn {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
+        }
+        
+        #generate-btn-top,
+        #generate-btn-bottom,
+        #quick-apply-btn {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
+        }
+
+        .btn-danger {
+            background: #FF5252;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff1744;
+        }
+
+        .btn-warning {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #FFB300;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100; /* Au-dessus des boutons menu (1001) */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: visible; /* IMPORTANT : permet à la croix de dépasser */
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -14px;
+            right: 6px; /* Au lieu de -14px, soit +20px vers la gauche */
+            background: #FF5555;
+            border: 3px solid white;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            line-height: 1;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        
+        /* CRITIQUE : La croix ne doit PAS être clippée */
+        #level-manager-modal .modal-wrapper-large,
+        #auto-create-modal .modal-wrapper-large {
+            overflow: visible !important;
+        }
+        
+        #level-manager-modal .modal-content,
+        #auto-create-modal .modal-content {
+            overflow: visible !important;
+        }
+        
+        #level-manager-modal .modal-close,
+        #auto-create-modal .modal-close,
+        #password-modal .modal-close,
+        #welcome-preview-modal .modal-close,
+        #help-teacher-modal .modal-close,
+        #welcome-student-modal .modal-close {
+            z-index: 1200; /* Au-dessus de la modal (1100) */
+        }
+        
+        /* ============================================
+           SYSTÈME DE POPUPS SIMPLES - TEMPLATE RÉUTILISABLE
+           ============================================
+           
+           Pour créer une nouvelle popup qui fonctionne PARFAITEMENT,
+           utilisez EXACTEMENT cette structure :
+           
+           <div id="ma-popup" class="modal simple-popup">
+               <div class="simple-popup-wrapper" style="max-width: 500px;">
+                   <span class="modal-close" onclick="closeMaPopup()">&times;</span>
+                   <div class="modal-content">
+                       [VOTRE CONTENU ICI]
+                   </div>
+               </div>
+           </div>
+           
+           IMPORTANT :
+           - La classe "simple-popup" est OBLIGATOIRE sur le div.modal
+           - La classe "simple-popup-wrapper" est OBLIGATOIRE sur le div enfant
+           - Ajustez uniquement le max-width selon vos besoins (400px, 500px, 680px, etc.)
+           - Le modal-content s'adaptera automatiquement
+           
+           ============================================ */
+        
+        /* Popups simples : le modal-content doit prendre 100% de son parent */
+        .simple-popup .modal-content {
+            max-width: none !important; /* Annuler le max-width: 400px du CSS général */
+            width: 100% !important; /* Prendre toute la largeur du parent */
+        }
+        
+        /* Wrapper des popups simples */
+        .simple-popup-wrapper {
+            position: relative;
+            width: 90%;
+        }
+        
+        /* Popups pédagogiques existantes : appliquer le même système */
+        #welcome-preview-modal .modal-content,
+        #help-teacher-modal .modal-content,
+        #welcome-student-modal .modal-content {
+            max-width: none !important;
+            width: 100% !important;
+        }
+        
+        /* Positionner les croix des grandes modals - elles suivent automatiquement */
+        .level-manager-close,
+        .auto-create-close {
+            right: 6px !important; /* Position normale PC */
+        }
+        
+        /* Décalage de 20px vers la gauche UNIQUEMENT sur mobile */
+        @media (max-width: 768px) {
+            #level-manager-modal .level-manager-close,
+            #auto-create-modal .auto-create-close {
+                right: 26px !important; /* 6px + 20px = 26px */
+            }
+        }
+
+        .modal-close:hover {
+            background: #FF0000;
+            transform: scale(1.1);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 20px;
+        }
+        
+        /* Styles pour le header avec bouton */
+        .modal-header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .modal-header-with-button h2 {
+            margin: 0;
+        }
+        
+        .auto-create-btn {
+            background: #9C27B0;
+            color: white;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .auto-create-btn:hover {
+            background: #7B1FA2;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #E0E0E0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        /* Messages de résultat */
+        .result-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .result-message.success {
+            background: #C8E6C9;
+            color: #2E7D32;
+            border: 2px solid #4CAF50;
+        }
+
+        /* Popup de félicitations */
+        .success-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            text-align: center;
+            min-width: 400px;
+            animation: popupAppear 0.3s ease-out;
+        }
+
+        @keyframes popupAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+
+        .success-popup.show,
+        .success-popup-overlay.show {
+            display: block;
+        }
+
+        .success-popup h2 {
+            color: #4CAF50;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .success-popup .emoji {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .success-popup p {
+            font-size: 16px;
+            color: #555;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .success-popup .bonus-message {
+            background: #FFF9C4;
+            border: 2px solid #FBC02D;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #F57F17;
+            font-weight: bold;
+        }
+
+        .success-popup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .success-popup-buttons button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .success-popup-buttons .btn-icon {
+            font-size: 24px;
+            display: block;
+            line-height: 1;
+        }
+        
+        .success-popup-buttons .btn-text {
+            display: block;
+            margin-top: 8px;
+        }
+
+        .success-popup-buttons .btn-restart {
+            background: #FF9800;
+            color: white;
+        }
+
+        .success-popup-buttons .btn-restart:hover {
+            background: #F57C00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .success-popup-buttons .btn-next {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .success-popup-buttons .btn-next:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .result-message.error {
+            background: #FFCDD2;
+            color: #C62828;
+            border: 2px solid #F44336;
+        }
+
+        /* Affichage des variables */
+        .variable-display {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        .variable-display h4 {
+            color: #E65100;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .variables-list {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .variables-list div {
+            padding: 4px 0;
+        }
+
+        /* Module Pinceau */
+        .paint-module {
+            background: #F5F5F5;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            transform: scale(1.2);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+        }
+
+        .color-option.eraser {
+            border: 2px solid #999;
+        }
+
+        /* Motifs géométriques pour difficulté 3 */
+        .pattern-picker {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pattern-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            background: white;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .pattern-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .pattern-option.selected {
+            border-color: #4C97FF;
+            background: #E3F2FD;
+            transform: scale(1.2);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #4C97FF;
+        }
+
+        .pattern-option svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-cell.paintable {
+            cursor: crosshair;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-panel, .middle-panel {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #E0E0E0;
+            }
+        }
+        /* Styles pour la sauvegarde en ligne */
+        .online-save-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #E8F5E9;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+        }
+
+        .online-save-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save-online {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-save-online:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-load-online {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-load-online:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+        }
+
+        /* Modal pour sauvegarde/chargement en ligne */
+        .online-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        .online-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .online-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            animation: slideDown 0.3s;
+            position: relative;
+        }
+
+        .online-modal-content h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .online-modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #E0E0E0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .online-modal-content input:focus {
+            outline: none;
+            border-color: #4C97FF;
+        }
+
+        .captcha-box {
+            background: #F5F5F5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .captcha-question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .captcha-input {
+            width: 80px !important;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .online-modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .online-modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #45a049;
+        }
+
+        .btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #da190b;
+        }
+
+        .success-url-box {
+            background: #E8F5E9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 2px solid #4CAF50;
+        }
+
+        .success-url-box strong {
+            color: #2E7D32;
+        }
+
+        .success-url-box a {
+            color: #1976D2;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .success-url-box a:hover {
+            text-decoration: underline;
+        }
+
+        .info-box {
+            background: #E3F2FD;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #1565C0;
+            border-left: 4px solid #2196F3;
+        }
+
+        .error-message {
+            background: #FFEBEE;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: #C62828;
+            border-left: 4px solid #f44336;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* ===================================
+           STYLES MOBILE RESPONSIVE
+           =================================== */
+        
+        /* Menu hamburger (caché par défaut sur desktop) */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #4C97FF;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
+        
+        .mobile-menu-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Menu hamburger ORANGE à droite pour les modes */
+        .mobile-mode-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #FF9800;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
+        
+        .mobile-mode-menu-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Panneau latéral des blocs (gauche) */
+        .mobile-blocks-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 10px 15px 15px 15px; /* Très peu de padding en haut */
+        }
+        
+        .mobile-blocks-panel.active {
+            left: 0;
+        }
+        
+        /* Première catégorie collée en haut */
+        .mobile-blocks-panel .mobile-category-header:first-child {
+            margin-top: 5px !important;
+            margin-left: 60px; /* Augmenté de 50px à 60px pour éviter le bouton */
+            padding-left: 5px; /* Un peu d'espace supplémentaire */
+        }
+        
+        /* Panneau latéral des modes (droite) */
+        .mobile-mode-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 70px 15px 15px 15px;
+        }
+        
+        .mobile-mode-panel.active {
+            right: 0;
+        }
+        
+        .mobile-mode-panel h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+        
+        /* Styles des boutons dans le panneau mobile orange - UNIQUEMENT sur mobile */
+        @media (max-width: 768px) {
+            .mobile-mode-panel .mode-btn {
+                display: block; /* Pas de !important pour permettre le contrôle JS */
+                width: 100%;
+                margin-bottom: 15px;
+                padding: 18px;
+                font-size: 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                border: 2px solid transparent;
+                font-weight: bold;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                transition: all 0.2s;
+            }
+            
+            .mobile-mode-panel .mode-btn:active {
+                transform: scale(0.95);
+            }
+            
+            .mobile-mode-panel .mode-btn.active {
+                border-color: #FF9800;
+                background: linear-gradient(135deg, #4C97FF 0%, #3373CC 100%);
+            }
+        }
+        
+        /* Overlay pour fermer le menu */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none; /* Par défaut ne bloque rien */
+        }
+        
+        .mobile-overlay.active {
+            opacity: 1;
+            pointer-events: auto; /* Seulement quand actif */
+        }
+        
+        /* ========== CURSEUR DE VITESSE ========== */
+        
+        .speed-control {
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .speed-control label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #007bff;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .speed-control input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #007bff;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .speed-control #speed-label,
+        .speed-control #student-speed-label {
+            display: block;
+            margin-top: 3px;
+            font-size: 11px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        /* ========== STYLES TEACHER MODE (PC ET MOBILE) ========== */
+        
+        /* Cacher les éléments élève en mode professeur */
+        body.teacher-mode #student-left {
+            display: none !important;
+        }
+        
+        /* Afficher les éléments professeur en mode professeur */
+        body.teacher-mode #teacher-left {
+            display: block !important;
+        }
+        
+        /* ========== MODE PROFESSEUR PC : Boutons SOUS la grille ========== */
+        /* S'applique uniquement sur GRAND ÉCRAN (>768px) */
+        @media (min-width: 769px) {
+            .teacher-grid-and-buttons-wrapper {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 15px !important;
+                margin-top: 15px !important;
+                align-items: center !important;
+            }
+            
+            .teacher-grid-and-buttons-wrapper .grid-container {
+                width: 100% !important;
+                max-width: 600px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            
+            .teacher-grid-and-buttons-wrapper #teacher-grid {
+                width: fit-content !important; /* Adapter à la taille du contenu */
+                max-width: 100% !important;
+                aspect-ratio: 1 !important;
+            }
+            
+            /* Boutons en grille 2x2 SOUS la grille */
+            .teacher-action-buttons {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-rows: repeat(2, 1fr) !important;
+                gap: 10px !important;
+                width: 100% !important;
+                max-width: 600px !important;
+            }
+            
+            .teacher-action-buttons button {
+                width: 100% !important;
+                padding: 15px 10px !important;
+                font-size: 14px !important;
+                line-height: 1.3 !important;
+                white-space: normal !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                text-align: center !important;
+                min-height: 70px !important;
+                border-radius: 8px !important;
+            }
+        }
+        
+        /* Media Query pour Mobile */
+        @media (max-width: 768px) {
+            /* Afficher les menus hamburger */
+            .mobile-menu-btn,
+            .mobile-mode-menu-btn {
+                display: block;
+            }
+            
+            .mobile-blocks-panel,
+            .mobile-mode-panel {
+                display: block;
+            }
+            
+            .mobile-overlay {
+                display: block;
+            }
+            
+            /* Modifier le body pour permettre le scroll */
+            body {
+                overflow: auto !important;
+                height: auto !important;
+                min-height: 100vh !important;
+            }
+            
+            .app-container {
+                height: auto !important;
+                min-height: 100vh;
+                overflow: visible !important;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Header compact */
+            .header {
+                padding: 8px 70px 8px 70px; /* Espace pour les 2 hamburgers */
+                min-height: 50px;
+                flex-wrap: nowrap; /* Empêcher le retour à la ligne */
+                justify-content: space-between; /* Espace entre titre et score */
+                align-items: center;
+            }
+            
+            .header h1 {
+                display: block !important; /* Afficher le h1 en mobile */
+                font-size: 16px; /* Taille augmentée */
+                text-align: left;
+                width: auto; /* Pas de 100%, pour laisser place au score */
+                flex-shrink: 1; /* Permet de rétrécir si nécessaire */
+                margin: 0;
+                font-weight: bold;
+            }
+            
+            .header-subtitle {
+                display: none !important; /* Toujours caché en mobile pour éviter le doublon */
+            }
+            
+            .header > div:first-child {
+                display: flex; /* Afficher le div pour que le h1 soit visible */
+                width: auto; /* Pas de 100% */
+                flex-shrink: 1;
+            }
+            
+            /* Score dans le header */
+            .score-display {
+                font-size: 12px !important;
+                padding: 6px 8px !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 6px !important;
+                align-items: center !important;
+            }
+            
+            .score-display button {
+                font-size: 11px !important;
+                padding: 3px 8px !important;
+            }
+            
+            /* Bouton d'aide en mobile : remplacer le score */
+            #help-button {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 18px !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+            }
+            
+            /* En mode création mobile : cacher le score, afficher le bouton aide */
+            body.teacher-mode .score-display,
+            .teacher-mode .score-display {
+                display: none !important;
+            }
+            
+            body.teacher-mode #help-button,
+            .teacher-mode #help-button {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin-left: auto !important;
+            }
+            
+            /* CACHER les boutons de mode dans le header */
+            .mode-selector {
+                display: none !important;
+            }
+            
+            /* Container principal scrollable */
+            .main-content {
+                display: flex;
+                flex-direction: column;
+                overflow-y: visible !important; /* Permettre le débordement */
+                overflow-x: hidden;
+                padding: 10px;
+                gap: 10px;
+                height: auto !important; /* Hauteur automatique basée sur le contenu */
+                min-height: 0 !important;
+                flex: none !important; /* Pas de flex: 1 qui force la hauteur */
+            }
+            
+            /* Panels à 100% */
+            .left-panel,
+            .right-panel {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 10px !important;
+            }
+            
+            /* FORCER student-left en flex container */
+            #student-left {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 0 !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+            
+            /* Les 2 premiers enfants (cursus et niveau) côte à côte */
+            #student-left > .cursus-selector {
+                flex: 0 0 48% !important;
+                width: 48% !important;
+                max-width: 48% !important;
+                margin: 0 4% 10px 0 !important;
+                display: block !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            #student-left > .level-selector {
+                flex: 0 0 48% !important;
+                width: 48% !important;
+                max-width: 48% !important;
+                margin: 0 0 10px 0 !important;
+                display: block !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            .cursus-selector select,
+            .level-selector select {
+                width: 100% !important;
+                font-size: 14px !important;
+                padding: 8px !important;
+                box-sizing: border-box !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            .cursus-selector label,
+            .level-selector label {
+                font-size: 12px !important;
+                margin-bottom: 4px !important;
+                display: block !important;
+                pointer-events: none !important;
+            }
+            
+            /* Les 2 div de grilles (3ème et 4ème enfants) côte à côte */
+            #student-left > div:nth-child(3) {
+                flex: 0 0 48% !important;
+                width: 48% !important;
+                max-width: 48% !important;
+                margin: 0 4% 10px 0 !important;
+                display: block !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+            
+            #student-left > div:nth-child(4) {
+                flex: 0 0 48% !important;
+                width: 48% !important;
+                max-width: 48% !important;
+                margin: 0 0 10px 0 !important;
+                display: block !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+            
+            /* Les controls et result-message en 100% */
+            #student-left > .controls,
+            #student-left > #result-message {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                position: relative !important;
+                z-index: 100 !important;
+            }
+            
+            /* Curseur de vitesse (5ème enfant) en 100% sous les 2 grilles */
+            #student-left > .speed-control {
+                flex: 0 0 100% !important;
+                width: calc(100% - 20px) !important;
+                max-width: 100% !important;
+                margin: 10px 10px !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Boutons FORCÉS cliquables */
+            .controls button,
+            .btn {
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                cursor: pointer !important;
+                -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+            }
+            
+            /* Titres des grilles */
+            #student-left h4 {
+                font-size: 10px !important;
+                margin: 10px 0 3px 0 !important;
+                text-align: center !important;
+                height: auto !important;
+                min-height: 24px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                line-height: 1.2 !important;
+            }
+            
+            /* Conteneur de grille */
+            .grid-container {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                width: 100% !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Grilles avec max-width pour ne jamais déborder */
+            #teacher-grid,
+            #student-grid,
+            #target-grid {
+                width: calc(100% - 4px) !important; /* -4px pour les bordures */
+                height: auto !important;
+                max-width: calc(100% - 4px) !important;
+                aspect-ratio: 1 / 1 !important;
+                margin: 0 auto !important;
+                display: grid !important;
+                grid-template-columns: repeat(10, 1fr) !important;
+                grid-template-rows: repeat(10, 1fr) !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important; /* Empêcher tout débordement */
+            }
+            
+            /* Cellules responsives - pas de taille fixe */
+            #teacher-grid .cell,
+            #student-grid .cell,
+            #target-grid .cell {
+                width: 100% !important;
+                height: 100% !important;
+                min-width: 0 !important; /* Permettre de rétrécir */
+                min-height: 0 !important;
+                border: 1px solid #ddd !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+            
+            /* Alias pour grid-cell (au cas où) */
+            .grid-cell {
+                width: 100% !important;
+                height: 100% !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                font-size: 10px !important; /* Réduire la taille des flèches */
+                line-height: 1 !important;
+            }
+            
+            /* Tortue centrée dans la cellule */
+            .turtle {
+                width: 70% !important;
+                height: 70% !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+            }
+            
+            /* Boutons sous les grilles */
+            .controls {
+                display: flex !important;
+                gap: 8px !important;
+                justify-content: center !important;
+                flex-wrap: wrap !important;
+                margin: 15px 0 !important;
+                clear: both !important;
+                width: 100% !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            .controls button,
+            .btn {
+                flex: 1 !important;
+                min-width: 80px !important;
+                max-width: 120px !important;
+                padding: 12px 8px !important;
+                font-size: 13px !important;
+                border-radius: 6px !important;
+                cursor: pointer !important;
+                font-weight: bold !important;
+                height: auto !important;
+                line-height: 1.2 !important;
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            .controls button:active,
+            .btn:active {
+                transform: scale(0.95) !important;
+            }
+            
+            /* Bouton d'aide : prend toute la largeur en mobile */
+            #help-me-btn {
+                max-width: 100% !important;
+                width: 100% !important;
+                flex: none !important;
+            }
+            
+            /* Zone programme */
+            .program-section {
+                margin-top: 15px !important;
+                width: 100% !important;
+            }
+            
+            .program-section h2 {
+                font-size: 16px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            #program-blocks {
+                min-height: 200px !important;
+                padding: 15px !important;
+            }
+            
+            /* Les vrais blocs .block dans le programme - PLUS GROS */
+            #program-blocks .block {
+                min-height: 56px !important;
+                font-size: 16px !important;
+                padding: 14px !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* Program-block container */
+            .program-block {
+                margin-bottom: 10px !important;
+                cursor: move !important;
+            }
+            
+            .nested-blocks {
+                min-height: 60px !important;
+                margin-top: 8px !important;
+                padding: 8px !important;
+            }
+            
+            .nested-blocks .block {
+                min-height: 52px !important;
+                font-size: 15px !important;
+            }
+            
+            /* Inputs dans les blocs plus gros */
+            #program-blocks input[type="number"],
+            #program-blocks input[type="text"],
+            #program-blocks .value-slot input {
+                font-size: 16px !important;
+                padding: 8px !important;
+                min-width: 60px !important;
+                min-height: 40px !important;
+                -webkit-appearance: none !important;
+                -moz-appearance: textfield !important;
+                appearance: none !important;
+            }
+            
+            /* Selects (dropdowns) dans les blocs PLUS GROS et cliquables */
+            #program-blocks select,
+            #program-blocks .var-select {
+                font-size: 16px !important;
+                padding: 8px !important;
+                min-height: 44px !important;
+                min-width: 80px !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                z-index: 100 !important;
+                background: white !important;
+                border: 2px solid #ddd !important;
+                border-radius: 4px !important;
+                cursor: pointer !important;
+            }
+            
+            /* Masquer les flèches spinner sur mobile */
+            #program-blocks input[type="number"]::-webkit-inner-spin-button,
+            #program-blocks input[type="number"]::-webkit-outer-spin-button {
+                -webkit-appearance: none !important;
+                margin: 0 !important;
+            }
+            
+            /* Aussi dans le menu mobile */
+            #mobile-blocks-list input[type="number"],
+            #mobile-blocks-list input[type="text"] {
+                font-size: 16px !important;
+                padding: 8px !important;
+                min-width: 60px !important;
+                min-height: 40px !important;
+                -webkit-appearance: none !important;
+                -moz-appearance: textfield !important;
+                appearance: none !important;
+            }
+            
+            #mobile-blocks-list select {
+                font-size: 16px !important;
+                padding: 8px !important;
+                min-height: 44px !important;
+                pointer-events: auto !important;
+            }
+            
+            #mobile-blocks-list input[type="number"]::-webkit-inner-spin-button,
+            #mobile-blocks-list input[type="number"]::-webkit-outer-spin-button {
+                -webkit-appearance: none !important;
+                margin: 0 !important;
+            }
+            
+            /* Bouton de suppression × plus gros */
+            #program-blocks .remove-btn {
+                min-width: 44px !important;
+                min-height: 44px !important;
+                font-size: 24px !important;
+                padding: 8px !important;
+            }
+            
+            /* Cacher la palette de blocs originale */
+            .blocks-palette {
+                display: none !important;
+            }
+            
+            /* Sidebar cachée */
+            .sidebar {
+                display: none !important;
+            }
+            
+            /* Variables plus grosses */
+            .variable-item {
+                padding: 10px !important;
+                font-size: 15px !important;
+            }
+            
+            /* Modals adaptées */
+            .modal-content {
+                width: 95% !important;
+                max-width: 400px !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+            }
+            
+            /* Inputs plus gros */
+            input[type="text"],
+            input[type="number"],
+            select {
+                font-size: 16px !important;
+                padding: 10px !important;
+            }
+            
+            /* Message de résultat */
+            #result-message {
+                margin-top: 10px !important;
+                font-size: 14px !important;
+            }
+            
+            /* ========== MODE PROFESSEUR MOBILE ========== */
+            
+            /* En mode professeur : cacher les éléments élève */
+            body.teacher-mode #student-left {
+                display: none !important;
+            }
+            
+            /* En mode professeur : afficher les éléments professeur */
+            body.teacher-mode #teacher-left {
+                display: block !important;
+            }
+            
+            /* Paint module : bouton génération automatique même largeur que la ligne du dessus */
+            body.teacher-mode .paint-module {
+                width: 100% !important;
+            }
+            
+            body.teacher-mode .paint-module button[onclick="generateRandomPattern()"] {
+                width: 100% !important;
+                max-width: none !important; /* CRUCIAL : Enlever la limite de 120px */
+                min-width: 0 !important;
+                flex: none !important; /* Ne pas être affecté par flex */
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Assurez que la ligne avec difficulté + générer prend toute la largeur */
+            body.teacher-mode .paint-module > div[style*="display: flex"] {
+                width: 100% !important;
+            }
+            
+            /* Wrapper grille + boutons en flex horizontal */
+            .teacher-grid-and-buttons-wrapper {
+                display: flex !important;
+                gap: 10px !important;
+                margin-top: 15px !important;
+                align-items: stretch !important; /* Étirer sur toute la hauteur */
+            }
+            
+            /* Grille prend 75% de l'espace */
+            .teacher-grid-and-buttons-wrapper .grid-container {
+                flex: 0 0 calc(75% - 7.5px) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            
+            /* Forcer la grille à définir la hauteur */
+            .teacher-grid-and-buttons-wrapper #teacher-grid {
+                width: 100% !important;
+                aspect-ratio: 1 !important;
+            }
+            
+            /* Boutons prennent 25% de l'espace ET s'étirent sur la hauteur de la grille */
+            .teacher-action-buttons {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                flex: 0 0 calc(25% - 2.5px) !important;
+                align-self: stretch !important; /* S'étirer pour matcher la hauteur */
+            }
+            
+            /* SUR PC (>768px) : Afficher les 4 boutons en grille 2x2 */
+            @media (min-width: 769px) {
+                .teacher-action-buttons {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    grid-template-rows: repeat(2, 1fr) !important;
+                    gap: 8px !important;
+                }
+                
+                .teacher-action-buttons button {
+                    flex: none !important; /* Annuler le flex pour la grille */
+                    height: 100% !important;
+                }
+            }
+            
+            /* Chaque bouton prend 1/4 de la hauteur disponible avec gap */
+            .teacher-action-buttons button {
+                width: 100% !important;
+                min-width: 0 !important;
+                padding: 8px 4px !important;
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                white-space: normal !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 4px !important;
+                text-align: center !important;
+                flex: 1 1 0 !important; /* Répartition égale avec base 0 */
+                min-height: 0 !important;
+                border-radius: 6px !important; /* Garder les arrondis normaux */
+            }
+            
+            /* ========== CORRECTIONS MODAL "GÉRER LES NIVEAUX" MOBILE ========== */
+            
+            /* 1. CROIX : la laisser dépasser en dehors, en haut à droite, décalée de 20px vers la gauche */
+            #level-manager-modal .modal-close,
+            #auto-create-modal .modal-close {
+                top: -14px !important;
+                right: 6px !important; /* -14px + 20px = 6px */
+                z-index: 10001 !important;
+            }
+            
+            /* 2. ALIGNEMENT DES LABELS - Forcer même hauteur pour tous */
+            #level-manager-modal label,
+            #auto-create-modal label {
+                min-height: 2.8em !important; /* Hauteur pour 2 lignes de texte */
+                display: flex !important;
+                align-items: flex-end !important; /* Aligne le texte en bas */
+                line-height: 1.4 !important;
+            }
+            
+            /* 3. ENLEVER LES FLÈCHES DES INPUT NUMBER */
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none !important;
+                margin: 0 !important;
+            }
+            
+            input[type="number"] {
+                -moz-appearance: textfield !important;
+                appearance: textfield !important;
+            }
+            
+            /* 4. CHAMPS NE DÉBORDENT PAS */
+            #level-manager-modal input,
+            #auto-create-modal input {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* 5. ICÔNES POUBELLE CONTENUES - Ne pas changer le layout */
+            #level-manager-modal .btn-danger {
+                min-width: 40px !important;
+                max-width: 40px !important;
+                padding: 6px !important;
+                font-size: 16px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            /* IMPORTANT : Ne PAS changer le layout des items de niveau */
+            /* Ils sont déjà en flex row dans le JS, c'est correct */
+            
+            /* Enlever le scroll horizontal en ajustant les gaps */
+            #level-manager-modal .modal-content,
+            #auto-create-modal .modal-content {
+                max-width: 95vw !important;
+                overflow-x: hidden !important;
+            }
+            
+            #level-manager-modal .modal-content > div,
+            #auto-create-modal .modal-content > div {
+                max-width: 100% !important;
+                overflow-x: hidden !important;
+            }
+            
+            /* Réduire les gaps sur mobile pour éviter débordement */
+            #level-manager-modal div[style*="display: flex"][style*="gap"] {
+                gap: 10px !important;
+            }
+            
+            /* ========== RESPONSIVE : PASSER À LA LIGNE SI NÉCESSAIRE ========== */
+            
+            /* Header modal : bouton "Création automatisée" sur ligne séparée en mobile */
+            @media (max-width: 768px) {
+                .modal-header-with-button {
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                    gap: 15px !important;
+                }
+                
+                .modal-header-with-button h2 {
+                    text-align: center !important;
+                }
+                
+                .auto-create-btn {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    padding: 12px 16px !important;
+                    font-size: 14px !important;
+                    display: block !important; /* Surcharger display: flex de .btn */
+                    box-sizing: border-box !important;
+                    text-align: center !important;
+                }
+            }
+            
+            /* Configuration des mondes : 3 colonnes -> colonne si trop étroit */
+            @media (max-width: 500px) {
+                .worlds-config-inputs {
+                    flex-direction: column !important;
+                    gap: 15px !important;
+                }
+                
+                .worlds-config-inputs > div {
+                    width: 100% !important;
+                }
+                
+                .worlds-config-inputs select,
+                .worlds-config-inputs input {
+                    width: 100% !important;
+                    max-width: none !important;
+                }
+                
+                /* Auto-create modal : Configuration générale */
+                .auto-config-inputs {
+                    flex-direction: column !important;
+                    gap: 15px !important;
+                }
+                
+                .auto-config-inputs > div {
+                    width: 100% !important;
+                }
+                
+                .auto-config-inputs select,
+                .auto-config-inputs input {
+                    width: 100% !important;
+                    max-width: none !important;
+                }
+            }
+            
+            /* Auto-create modal : Configuration rapide - 4 colonnes -> 2 colonnes -> 1 colonne */
+            @media (max-width: 768px) {
+                .quick-config-grid {
+                    grid-template-columns: repeat(2, 1fr) !important; /* 2 colonnes sur tablette */
+                }
+            }
+            
+            @media (max-width: 500px) {
+                .quick-config-grid {
+                    grid-template-columns: 1fr !important; /* 1 colonne sur mobile */
+                }
+            }
+            
+            /* Points requis pour débloquer : wrap si trop étroit */
+            .world-config-item {
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+            
+            @media (max-width: 450px) {
+                .world-config-item {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                }
+                
+                .world-config-item > span:first-child {
+                    min-width: 0 !important;
+                    width: 100% !important;
+                }
+                
+                .world-config-item > div {
+                    width: 100% !important;
+                }
+            }
+            
+            /* Items de niveaux : optimiser l'espace avant wrap */
+            .level-item {
+                flex-wrap: wrap !important;
+                gap: 8px !important; /* Réduire le gap pour gagner de l'espace */
+            }
+            
+            /* Réduire l'espace du nombre de blocs sur mobile */
+            @media (max-width: 768px) {
+                .level-item > div:nth-child(3) {
+                    min-width: 50px !important; /* Au lieu de 60px */
+                    flex-shrink: 0 !important;
+                }
+            }
+            
+            /* Bouton poubelle : ne wrap que si vraiment nécessaire */
+            .level-delete-btn {
+                flex-shrink: 0 !important;
+                min-width: 36px !important;
+            }
+            
+            /* Sur très petits écrans, assurer que le bouton poubelle ne déborde pas */
+            @media (max-width: 350px) {
+                .level-item button {
+                    margin-left: 0 !important;
+                    margin-top: 5px !important;
+                    width: 100% !important;
+                }
+            }
+        }
+        
+        /* Media Query pour très petits écrans */
+        @media (max-width: 480px) {
+            .mobile-menu-btn,
+            .mobile-mode-menu-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+            
+            .controls button,
+            .btn {
+                min-width: 70px !important;
+                font-size: 12px !important;
+            }
+        }
+
+
+/* Animation flèche rose */
+@keyframes pink-arrow-pulse {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        color: #FF1493;
+    }
+    50% {
+        transform: translateY(10px) scale(1.3);
+        opacity: 0.8;
+        color: #FF69B4;
+        filter: drop-shadow(0 0 10px #FF1493);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        color: #FF1493;
+    }
+}
+
+#pink-arrow.animate {
+    display: block !important;
+    opacity: 1 !important;
+    animation: pink-arrow-pulse 1.5s ease-in-out 3;
+    color: #FF1493;
+    font-weight: bold;
+}
+
+/* Animation de la tortue rose */
+@keyframes turtle-pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(255, 20, 147, 0));
+    }
+    50% {
+        transform: scale(1.8);
+        filter: drop-shadow(0 0 15px rgba(255, 20, 147, 0.8));
+    }
+}
+
+.turtle-pulse {
+    animation: turtle-pulse 0.8s ease-in-out 2;
+}
+
+/* Animation pour le trophée de félicitations */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(1.1);
+    }
+}
+
+/* Blocs plus gros sur mobile pour meilleure ergonomie tactile */
+@media (max-width: 768px) {
+    #program-blocks .block {
+        min-height: 56px !important;
+        font-size: 16px !important;
+        padding: 14px !important;
+    }
+}
