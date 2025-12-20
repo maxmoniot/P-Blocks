@@ -31,7 +31,7 @@
         <div id="mobile-student-buttons" style="display: none; margin-top: 15px;">
             <button class="mode-btn" id="mobile-student-save-btn" onclick="generateStudentCodeMobile()" style="background: #FF9800; color: white; width: 100%; margin-bottom: 8px;">💾 Sauvegarder</button>
             <button class="mode-btn" id="mobile-student-load-btn" onclick="openLoadProgressModalMobile()" style="background: #9C27B0; color: white; width: 100%; margin-bottom: 8px;">📥 Charger</button>
-            <button class="mode-btn" id="mobile-thanks-btn" onclick="openThanksModal()" style="background: #FF5722; color: white; width: 100%; margin-bottom: 8px;">❤️ Merci</button>
+            <button class="mode-btn" id="mobile-thanks-btn" onclick="openThanksModal()" style="background: #FF8A80; color: white; width: 100%; margin-bottom: 8px;">❤️ Merci</button>
         </div>
         
         <!-- Boutons professeur (visibles uniquement en mode professeur) -->
@@ -60,7 +60,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="mode-selector">
                     <div id="student-save-buttons" style="display: none;">
-                        <button class="mode-btn" onclick="openThanksModal()" style="background: #FF5722; border-color: white; padding: 8px 12px; font-size: 13px;">❤️ Merci</button>
+                        <button class="mode-btn" onclick="openThanksModal()" style="background: #FF8A80; border-color: white; padding: 8px 12px; font-size: 13px;">❤️ Merci</button>
                         <button class="mode-btn" onclick="generateStudentCode()" style="background: #FF9800; border-color: white; padding: 8px 12px; font-size: 13px;">💾 Sauvegarder</button>
                         <button class="mode-btn" onclick="openLoadProgressModal()" style="background: #9C27B0; border-color: white; padding: 8px 12px; font-size: 13px;">📥 Charger</button>
                     </div>
@@ -161,6 +161,7 @@
                             <div class="color-option" data-color="yellow" style="background-color: #FFFF00;" onclick="selectPaintColor('yellow')" title="Jaune"></div>
                             <div class="color-option" data-color="green" style="background-color: #00FF00;" onclick="selectPaintColor('green')" title="Vert"></div>
                             <div class="color-option" data-color="blue" style="background-color: #0000FF;" onclick="selectPaintColor('blue')" title="Bleu"></div>
+                            <div class="color-option" data-color="pink" style="background-color: #FF69B4;" onclick="selectPaintColor('pink')" title="Rose"></div>
                             <div class="color-option" data-color="black" style="background-color: #000000;" onclick="selectPaintColor('black')" title="Noir"></div>
                             <div class="color-option eraser" data-color="white" style="background-color: #FFFFFF; border: 2px solid #999;" onclick="selectPaintColor('white')" title="Gomme">🧹</div>
                         </div>
@@ -249,6 +250,7 @@
                             <div class="block looks" draggable="true" ondragstart="drag(event)" data-type="color" data-value="yellow">couleur JAUNE</div>
                             <div class="block looks" draggable="true" ondragstart="drag(event)" data-type="color" data-value="green">couleur VERT</div>
                             <div class="block looks" draggable="true" ondragstart="drag(event)" data-type="color" data-value="blue">couleur BLEU</div>
+                            <div class="block looks" draggable="true" ondragstart="drag(event)" data-type="color" data-value="pink">couleur ROSE</div>
                             <div class="block looks" draggable="true" ondragstart="drag(event)" data-type="color" data-value="black">couleur NOIR</div>
                         </div>
                     </div>
@@ -484,7 +486,7 @@
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;">Niveaux par monde:</label>
-                        <input type="number" id="auto-levels-per-world" min="1" value="10" onchange="updateAutoWorldsConfig()" style="width: 80px; height: 34px; margin-top: 2px; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+                        <input type="number" id="auto-levels-per-world" min="1" value="5" onchange="updateAutoWorldsConfig()" style="width: 80px; height: 34px; margin-top: 2px; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
                     </div>
                 </div>
             </div>
@@ -497,15 +499,15 @@
                 <div class="quick-config-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 10px;">
                     <div>
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;">Niveaux de difficulté 1:</label>
-                        <input type="number" id="quick-diff1" min="0" value="3" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
+                        <input type="number" id="quick-diff1" min="0" value="2" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
                     </div>
                     <div>
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;">Niveaux de difficulté 2:</label>
-                        <input type="number" id="quick-diff2" min="0" value="4" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
+                        <input type="number" id="quick-diff2" min="0" value="2" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
                     </div>
                     <div>
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;">Niveaux de difficulté 3:</label>
-                        <input type="number" id="quick-diff3" min="0" value="3" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
+                        <input type="number" id="quick-diff3" min="0" value="1" oninput="validateQuickConfig()" style="width: 100%; padding: 6px; border: 2px solid #E0E0E0; border-radius: 4px; font-size: 13px;">
                     </div>
                     <div>
                         <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;">Points requis (incrémental):</label>
@@ -722,8 +724,9 @@
             <div style="background: #FFF3E0; padding: 20px; border-radius: 6px; margin: 15px 0; border: 2px solid #FF9800; text-align: center;">
                 <p style="margin: 0; line-height: 1.6; color: #333;">
                     Un grand merci à tous les beta testeurs qui ont réussi à trouver des bugs ici ou là : 
-                    <strong>Samir</strong>, <strong>Jean</strong>, <strong>Hugo</strong>, 
-                    au collège Roquebleue les classes de <strong>5A</strong>, <strong>4A</strong>, <strong>4B</strong> et <strong>3A</strong>.
+                    <strong>Samir</strong>, <strong>Jean</strong>, <strong>Hugo</strong>, <strong>Gaëtan</strong>, <strong>Robin</strong>,
+                    au collège Roquebleue les classes de <strong>5A</strong>, <strong>4A</strong>, <strong>4B</strong> et <strong>3A</strong>, 
+                    au collège Le Bocage la classe de <strong>3A</strong>.
                 </p>
             </div>
             

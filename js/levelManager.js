@@ -486,6 +486,7 @@ function createLevelPreview(levelData) {
         'yellow': '#ffc107',
         'green': '#28a745',
         'blue': '#007bff',
+        'pink': '#FF69B4',
         'black': '#343a40'
     };
     

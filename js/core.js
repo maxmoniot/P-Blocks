@@ -1253,6 +1253,7 @@
                 'yellow': '#ffc107',
                 'green': '#28a745',
                 'blue': '#007bff',
+                'pink': '#FF69B4',
                 'black': '#343a40'
             };
             
@@ -3397,6 +3398,7 @@
                         'yellow': '#ffc107',
                         'green': '#28a745',
                         'blue': '#007bff',
+                        'pink': '#FF69B4',
                         'black': '#343a40',
                         'white': '#ffffff'
                     };

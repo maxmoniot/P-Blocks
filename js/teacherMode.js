@@ -222,6 +222,8 @@ function loadSavedBlock(blockData, container) {
                 'vert': 'VERT',
                 'blue': 'BLEU',
                 'bleu': 'BLEU',
+                'pink': 'ROSE',
+                'rose': 'ROSE',
                 'black': 'NOIR',
                 'noir': 'NOIR',
                 'white': 'BLANC',

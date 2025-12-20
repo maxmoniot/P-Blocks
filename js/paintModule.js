@@ -238,6 +238,7 @@ function paintCellManually(cell, index) {
             'yellow': '#ffc107',
             'green': '#28a745',
             'blue': '#007bff',
+            'pink': '#FF69B4',
             'black': '#343a40'
         };
         cell.style.backgroundColor = colorMap[selectedPaintColor];
@@ -303,12 +304,13 @@ function generateRandomPattern() {
         });
         
         // Couleurs disponibles (limité à 3 couleurs maximum)
-        const allColors = ['red', 'yellow', 'green', 'blue', 'black'];
+        const allColors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
         const colorMap = {
             'red': '#dc3545',
             'yellow': '#ffc107',
             'green': '#28a745',
             'blue': '#007bff',
+            'pink': '#FF69B4',
             'black': '#343a40'
         };
         
@@ -706,12 +708,13 @@ function generateSpiralProgram() {
     const randomI = Math.floor(Math.random() * 8) + 3; // 3 à 10 inclus
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -894,12 +897,13 @@ function generateZigzagProgram() {
     const randomI = 1;
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -1300,12 +1304,13 @@ function generateStairsProgram() {
         maxRepeat;
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -1521,12 +1526,13 @@ function generateStairsProgram() {
 function generateCheckerboardProgram() {
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -1916,12 +1922,13 @@ function generateCheckerboardProgram() {
 function generateCrossProgram() {
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -2324,12 +2331,13 @@ function generateCrossProgram() {
 function generateSquareProgram() {
     
     // Choisir une couleur aléatoire
-    const colors = ['red', 'yellow', 'green', 'blue', 'black'];
+    const colors = ['red', 'yellow', 'green', 'blue', 'pink', 'black'];
     const colorNames = {
         'red': 'ROUGE',
         'yellow': 'JAUNE',
         'green': 'VERT',
         'blue': 'BLEU',
+        'pink': 'ROSE',
         'black': 'NOIR'
     };
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -2997,6 +3005,7 @@ function loadPaintedCells(data) {
         'yellow': '#ffc107',
         'green': '#28a745',
         'blue': '#007bff',
+        'pink': '#FF69B4',
         'black': '#343a40'
     };
     
