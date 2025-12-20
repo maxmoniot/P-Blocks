@@ -56,24 +56,23 @@ function customConfirm(message, isDangerous = false) {
 function openAutoCreateModal() {
     const modal = document.getElementById('auto-create-modal');
     
-    // Synchroniser le cursus avec le select principal (par défaut)
-    const currentCursus = document.getElementById('teacher-cursus-select').value;
-    document.getElementById('auto-cursus-select').value = currentCursus;
+    // FORCER le cursus sur "all" (Tous) par défaut
+    document.getElementById('auto-cursus-select').value = 'all';
     
-    // Initialiser la configuration
+    // Initialiser la configuration avec 5 niveaux par monde par défaut
     autoCreateConfig = {
         numWorlds: 3,
-        levelsPerWorld: 10,
+        levelsPerWorld: 5,
         worlds: []
     };
     
-    // Initialiser les mondes avec des valeurs par défaut
+    // Initialiser les mondes avec des valeurs par défaut (2+2+1 pour 5 niveaux)
     for (let i = 0; i < 3; i++) {
         autoCreateConfig.worlds.push({
             pointsRequired: i === 0 ? 0 : 10 * i,
-            difficulty1: Math.floor(autoCreateConfig.levelsPerWorld / 3),
-            difficulty2: Math.floor(autoCreateConfig.levelsPerWorld / 3),
-            difficulty3: autoCreateConfig.levelsPerWorld - 2 * Math.floor(autoCreateConfig.levelsPerWorld / 3)
+            difficulty1: 2,
+            difficulty2: 2,
+            difficulty3: 1
         });
     }
     
@@ -665,6 +664,21 @@ async function generateWorldsAutomatically() {
     // Attendre un peu pour que le message s'affiche
     await new Promise(resolve => setTimeout(resolve, 100));
     
+    // Sauvegarder la vitesse actuelle et mettre à 100 pour la génération
+    let savedSpeed = 90;
+    const speedSlider = document.getElementById('execution-speed');
+    const studentSpeedSlider = document.getElementById('student-execution-speed');
+    if (speedSlider) {
+        savedSpeed = parseInt(speedSlider.value);
+        speedSlider.value = 100;
+    }
+    if (studentSpeedSlider) {
+        studentSpeedSlider.value = 100;
+    }
+    if (window.updateExecutionSpeed) {
+        window.updateExecutionSpeed(100);
+    }
+    
     try {
         let totalLevelsCreated = 0;
         
@@ -736,6 +750,17 @@ async function generateWorldsAutomatically() {
         saveToStorage();
         markAsModified(); // Marquer qu'il y a eu des modifications
         
+        // Nettoyer complètement la grille et les cellules peintes
+        if (typeof clearPaintedCells === 'function') {
+            clearPaintedCells();
+        }
+        if (typeof clearGrid === 'function') {
+            clearGrid();
+        }
+        if (typeof clearProgram === 'function') {
+            clearProgram();
+        }
+        
         // Fermer les popups et recharger
         const progressElement = document.getElementById('progress-message');
         if (progressElement) {
@@ -743,7 +768,7 @@ async function generateWorldsAutomatically() {
         }
         closeAutoCreateModal();
         closeLevelManagerModal();
-        loadTeacherLevels();
+        loadTeacherLevels(); // Cela chargera automatiquement le premier niveau
         
         // Initialiser le drag tactile sur TOUS les blocs générés (support mobile)
         setTimeout(() => {
@@ -752,12 +777,39 @@ async function generateWorldsAutomatically() {
             }
         }, 100);
         
+        // Restaurer la vitesse à 90 (valeur par défaut)
+        const speedSliderRestore = document.getElementById('execution-speed');
+        const studentSpeedSliderRestore = document.getElementById('student-execution-speed');
+        if (speedSliderRestore) {
+            speedSliderRestore.value = 90;
+        }
+        if (studentSpeedSliderRestore) {
+            studentSpeedSliderRestore.value = 90;
+        }
+        if (window.updateExecutionSpeed) {
+            window.updateExecutionSpeed(90);
+        }
+        
         
     } catch (error) {
         const progressElement = document.getElementById('progress-message');
         if (progressElement) {
             document.body.removeChild(progressElement);
         }
+        
+        // Restaurer la vitesse même en cas d'erreur
+        const speedSliderRestore = document.getElementById('execution-speed');
+        const studentSpeedSliderRestore = document.getElementById('student-execution-speed');
+        if (speedSliderRestore) {
+            speedSliderRestore.value = 90;
+        }
+        if (studentSpeedSliderRestore) {
+            studentSpeedSliderRestore.value = 90;
+        }
+        if (window.updateExecutionSpeed) {
+            window.updateExecutionSpeed(90);
+        }
+        
         alert('❌ Erreur lors de la génération: ' + error.message);
     }
 }
