@@ -822,10 +822,9 @@ async function generateLevel(cursus, levelNumber, difficulty, worldIdx = 0, leve
                 clearPaintedCells();
                 const cells = document.querySelectorAll('#teacher-grid .cell');
                 const gridSize = 10;
-                const allColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan'];
+                const allColors = ['red', 'yellow', 'green', 'blue', 'black'];
                 const colorMap = {
-                    'red': '#f44336', 'blue': '#2196F3', 'green': '#4CAF50', 'yellow': '#FFEB3B',
-                    'purple': '#9C27B0', 'orange': '#FF9800', 'pink': '#E91E63', 'cyan': '#00BCD4'
+                    'red': '#f44336', 'yellow': '#FFEB3B', 'green': '#4CAF50', 'blue': '#2196F3', 'black': '#343a40'
                 };
                 
                 // Choisir 1 à 2 couleurs
