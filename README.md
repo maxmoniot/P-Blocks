@@ -157,7 +157,7 @@ Chaque motif est généré avec :
 ## 👥 Remerciements
 
 Un grand merci à tous les beta testeurs qui ont trouvé des bugs : 
-**Samir**, **Jean**, **Hugo**, et au collège Roquebleue les classes de **5A**, **4A**, **4B** et **3A**.
+**Samir**, **Jean**, **Hugo**, **Gaetan**, **Robin**, au collège Roquebleue les classes de **5A**, **4A**, **4B** et **3A**, et au collège Le Bocage la classe de 3A
 
 **Application créée par Max, totalement programmée par Claude.ai**
 
