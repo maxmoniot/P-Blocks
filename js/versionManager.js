@@ -89,9 +89,44 @@ async function loadProfLevelsForStudent(profName) {
             // Charger les données du prof (en JSON non chiffré depuis le serveur)
             let loadedData = result.cursusData;
             
+            // Récupérer le timestamp de sauvegarde
+            const serverTimestamp = loadedData._lastSaveTimestamp || 0;
             
-            // Les données en ligne ne sont plus chiffrées
-            cursusData = loadedData;
+            // Clé pour stocker le dernier timestamp connu
+            const timestampKey = `lastSaveTimestamp_${profName}`;
+            const localTimestamp = parseInt(localStorage.getItem(timestampKey) || '0');
+            
+            
+            // Si le timestamp du serveur est plus récent, on doit recharger
+            if (serverTimestamp > localTimestamp) {
+                console.log(`🔄 Mise à jour détectée ! Nouveau timestamp : ${serverTimestamp}`);
+                
+                // Sauvegarder le nouveau timestamp
+                localStorage.setItem(timestampKey, serverTimestamp.toString());
+                
+                // Les données en ligne ne sont plus chiffrées
+                cursusData = loadedData;
+                
+                // Nettoyer le timestamp des données (ne pas le garder dans cursusData)
+                delete cursusData._lastSaveTimestamp;
+                
+                // Sauvegarder dans le localStorage pour persister les nouvelles données
+                if (typeof saveToStorage === 'function') {
+                    saveToStorage();
+                }
+                
+            } else {
+                console.log(`✅ Données à jour. Timestamp : ${serverTimestamp}`);
+                
+                // Le timestamp est identique, pas besoin de recharger
+                cursusData = loadedData;
+                delete cursusData._lastSaveTimestamp;
+                
+                // Sauvegarder quand même au cas où
+                if (typeof saveToStorage === 'function') {
+                    saveToStorage();
+                }
+            }
             
             // VÉRIFICATION DE VERSION : Reset automatique si version différente
             checkVersionAndReset(profName);

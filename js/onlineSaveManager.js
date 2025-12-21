@@ -443,7 +443,15 @@ async function confirmSaveOnline() {
         formData.append('password', password);
         formData.append('captchaAnswer', captchaUserAnswer);
         formData.append('captchaExpected', captchaAnswer);
-        formData.append('cursusData', JSON.stringify(cursusData)); // Envoyer en JSON non chiffré
+        
+        // Ajouter un timestamp de sauvegarde pour détecter les mises à jour
+        const saveTimestamp = Date.now();
+        
+        // Créer une copie de cursusData avec le timestamp
+        const dataToSave = JSON.parse(JSON.stringify(cursusData));
+        dataToSave._lastSaveTimestamp = saveTimestamp;
+        
+        formData.append('cursusData', JSON.stringify(dataToSave)); // Envoyer en JSON non chiffré
 
         // Envoyer au serveur
         const response = await fetch('php/api.php', {
