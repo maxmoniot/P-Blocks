@@ -1,0 +1,8 @@
+# Donnees ecrites par le serveur (comptes des profs, limites, parties) : jamais dans le depot public.
+# L'appli recree le dossier toute seule (php/api.php).
+php/data/
+# Dossiers de travail et bancs locaux
+FichiersTemporaires/
+tests/
+CLAUDE.md
+.claude/
